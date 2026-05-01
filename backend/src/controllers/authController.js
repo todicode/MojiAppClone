@@ -65,7 +65,11 @@ export const signIn = async (req, res) => {
         }
 
         // if fit, create access token with JWT
-        const accessToken = jwt.sign({ userId: user._id }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: ACCESS_TOKEN_TTL });
+        const accessToken = jwt.sign(
+            { userId: user._id }, 
+            process.env.ACCESS_TOKEN_SECRET, 
+            { expiresIn: ACCESS_TOKEN_TTL }
+        );
 
         // create refresh token
         const refreshToken = crypto.randomBytes(64).toString("hex"); // Generate a random refresh token
@@ -89,6 +93,26 @@ export const signIn = async (req, res) => {
     }
     catch (error) {
         console.error("Error during sign in:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+export const signOut = async (req, res) => {
+    try {
+        // Get refresh token from cookies
+        const token = req.cookies?.refreshToken;
+        if (token) {
+            // Clear the refresh token from sessions collection
+            await Session.deleteOne({ refreshToken: token });
+
+            // clear cookies
+            res.clearCookie("refreshToken");
+        }
+
+        return res.sendStatus(204);
+    }
+    catch (error) {
+        console.error("Error during sign out:", error);
         return res.status(500).json({ message: "Internal server error" });
     }
 };
