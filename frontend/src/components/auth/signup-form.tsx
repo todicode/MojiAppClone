@@ -6,26 +6,33 @@ import { Label } from "../ui/label"
 import {z} from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { use } from "react"
+import { useAuthStore } from "@/stores/useAuthStore"
+import { useNavigate } from "react-router"
 
 const signUpSchema = z.object({
-  firstname: z.string().min(1, "First name is required"),
-  lastname: z.string().min(1, "Last name is required"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
   username: z.string().min(3, "Username must be at least 3 characters"),
-  email: z.email("Invalid email address"),
+  email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
 type SignUpFormValues = z.infer<typeof signUpSchema>
 
 export function SignupForm({className, ...props}: React.ComponentProps<"div">) {
-
+  const { signUp } = useAuthStore();
+  const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema)
   });
 
   const onSubmit = async (data: SignUpFormValues) => {
     // call API to sign up the user
-  } 
+    const { firstName, lastName, username, email, password } = data;
+    await signUp(username, password, email, firstName, lastName);
+    navigate("/signin");
+  };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -51,34 +58,34 @@ export function SignupForm({className, ...props}: React.ComponentProps<"div">) {
               {/* full name */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="lastname" className="text-sm block">
+                  <Label htmlFor="lastName" className="text-sm block">
                     Last Name 
                   </Label>
                   <Input
                     type="text"
-                    id="lastname"
-                    {...register("lastname")}
+                    id="lastName"
+                    {...register("lastName")}
                   />
 
-                  {errors.lastname && (
+                  {errors.lastName && (
                     <p className="text-destructive text-sm">
-                      {errors.lastname.message}
+                      {errors.lastName.message}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="firstname" className="text-sm block">
+                  <Label htmlFor="firstName" className="text-sm block">
                     First Name 
                   </Label>
                   <Input 
                     type="text"
-                    id="firstname" 
-                    {...register("firstname")}
+                    id="firstName" 
+                    {...register("firstName")}
                   />
-                  {errors.firstname && (
+                  {errors.firstName && (
                     <p className="text-destructive text-sm">
-                      {errors.firstname.message}
+                      {errors.firstName.message}
                     </p>
                   )}
                 </div>

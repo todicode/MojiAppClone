@@ -1,6 +1,6 @@
 export const authMe = (req, res) => {
     try {
-        const user = req.user;
+        const user = req.user; // Get user from request object (set by auth middleware)
         return res.status(200).json({ user });
     }
     catch (error) {

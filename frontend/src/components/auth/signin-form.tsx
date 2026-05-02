@@ -6,6 +6,8 @@ import { Label } from "../ui/label"
 import {z} from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useNavigate } from "react-router"
+import { useAuthStore } from "@/stores/useAuthStore"
 
 const signInSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters"),
@@ -15,12 +17,17 @@ const signInSchema = z.object({
 type SignInFormValues = z.infer<typeof signInSchema>
 
 export function SigninForm({className, ...props}: React.ComponentProps<"div">) {
+    const { signIn } = useAuthStore();
+    const navigate = useNavigate();
     const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<SignInFormValues>({
         resolver: zodResolver(signInSchema)
       });
     
       const onSubmit = async (data: SignInFormValues) => {
         // call API to sign in the user
+        const { username, password } = data;
+        await signIn(username, password);
+        navigate("/");
       };
 
     return (
