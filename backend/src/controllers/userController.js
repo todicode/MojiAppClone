@@ -8,3 +8,7 @@ export const authMe = (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
+export const test = async (req, res) => {
+    return res.sendStatus(204);
+}

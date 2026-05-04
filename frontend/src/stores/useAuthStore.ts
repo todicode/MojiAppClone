@@ -34,7 +34,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({ loading: true });
             // call API to sign in the user
             const {accessToken} = await authService.signIn(username, password);
-            set({ accessToken });
+            get().setAccessToken(accessToken);
+            await get().fetchMe();
             toast.success("Sign in successful! Welcome back.");
         }
         catch (error) {
@@ -56,5 +57,45 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             console.error(error);
             toast.error("Failed to sign out. Please try again.");
         }
+    },
+
+    fetchMe: async () => {
+        try {
+            set({ loading: true });
+            const user = await authService.fetchMe();
+            set({ user });
+        }
+        catch (error) {
+            console.error(error);
+            set({ user: null, accessToken: null });
+            toast.error("Failed to fetch user information. Please try again.");
+        }
+        finally {
+            set({ loading: false });
+        }
+    },
+
+    refresh: async () => {
+        try {
+            set({ loading: true });
+            const {user, fetchMe, setAccessToken} = get();
+            const newAccessToken = await authService.refresh();
+            setAccessToken(newAccessToken);
+
+            if (!user){
+                await fetchMe();
+            }
+        }
+        catch (error) {
+            console.error(error);
+            get().clearState();
+        }
+        finally {
+            set({ loading: false });
+        }
+    },
+
+    setAccessToken: (accessToken) => {
+        set({ accessToken });
     }
 }));
